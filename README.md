@@ -1,7 +1,7 @@
 ### 1. How to Build
 
 ```bash
-cd pa1part1
+cd pa1part2
 mkdir out
 javac -encoding UTF-8 -d out $(find src -name "*.java")
 ```
@@ -14,183 +14,81 @@ Server (for example using port 58034)
 java -cp out Server 58034
 ```
 
-Client (for example using host csa1.bu.edu)
+Client (for example using host csa1.bu.edu): RTT mode, 20 probes, 1000 bytes each probe, server delay = 0
 
 ```bash
-java -cp out Client csa1.bu.edu 58034
+java -cp out Client csa1.bu.edu 58034 rtt 20 1000 0
+```
+
+Throughput mode, 20 probes, 2048 bytes (2KB) each prob, server delay = 0
+
+```bash
+java -cp out Client csa1.bu.edu 58034 tput 20 2048 0
 ```
 
 ### 3. Test Cases
 
-**Functional:**
-run server:
+Run Server on csa1
 
 ```bash
-[xiaoxij@csa1 ~]$ cd pa1part1
-[xiaoxij@csa1 pa1part1]$ mkdir out
-[xiaoxij@csa1 pa1part1]$ javac -encoding UTF-8 -d out $(find src -name "*.java")
-[xiaoxij@csa1 pa1part1]$ java -cp out Server 58034
+[xiaoxij@csa1 ~]$ cd pa1part2
+[xiaoxij@csa1 pa1part2]$ mkdir out
+[xiaoxij@csa1 pa1part2]$ javac -encoding UTF-8 -d out $(find src -name "*.java")
+[xiaoxij@csa1 pa1part2]$ java -cp out Server 58034
 Server is listening on port 58034 ...
 ```
 
-run client: (`mkdir out` will be skipped, because there is already an out folder when I connected to the csa2 server)
+Run Client on csa2, using RTT mode
 
 ```bash
-[xiaoxij@csa2 ~]$ cd pa1part1/
-[xiaoxij@csa2 pa1part1]$ javac -encoding UTF-8 -d out $(find src -name "*.java") 
-[xiaoxij@csa2 pa1part1]$ java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
+[xiaoxij@csa2 ~]$ cd pa1part2
+[xiaoxij@csa2 pa1part2]$ java -cp out Client csa1.bu.edu 58034 rtt 20 1000 0
+Server connected.
+[CSP SENT] s rtt 20 1000 0
+[CSP RESP] 200 OK: Ready
+[RESULT] avg RTT over 20 probes (size=1000B): 0.237 ms
+[CTP RESP] 200 OK: Closing Connection
 ```
 
-send message from client:
+Output of Server
 
-```bash
-[xiaoxij@csa2 pa1part1]$ java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
-hello, this is a message from csa2 server
-hello, this is a message from csa2 server
-hello👋
-hello👋
-test space       there are five space
-test space       there are five space
-     
-     
-
-
-
-
-test empty line and space above              
-test empty line and space above
 ```
-
-output of server :
-
-```bash
-[xiaoxij@csa1 pa1part1]$ java -cp out Server 58034
+[xiaoxij@csa1 pa1part2]$ java -cp out Server 58034
 Server is listening on port 58034 ...
-message from /128.197.11.36:34426: hello, this is a message from csa2 server
-message from /128.197.11.36:34426: hello👋
-message from /128.197.11.36:34426: test space       there are five space
-message from /128.197.11.36:34426:      
-message from /128.197.11.36:34426: 
-message from /128.197.11.36:34426: 
-message from /128.197.11.36:34426: test empty line and space above
+CSP from /128.197.11.36:57138 => type=rtt N=20 size=1000 delay=0ms
 ```
 
-Output above covers basic echo messages, emojis, spaces, and empty lines. All these types of messages can be correctly echoed back to the client.
-
-**Concurrency:**
-
-This part I will run client on csa2, csa3 and my own computer then connect to the server on csa1 and send messages.
-
-client on csa3:
+Run Client on csa2, using Throughput mode
 
 ```bash
-[xiaoxij@csa3 pa1part1]$ javac -encoding UTF-8 -d out $(find src -name "*.java")
-[xiaoxij@csa3 pa1part1]$ java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
+[xiaoxij@csa2 pa1part2]$ java -cp out Client csa1.bu.edu 58034 tput 20 8192 0
+Server connected.
+[CSP SENT] s tput 20 8192 0
+[CSP RESP] 200 OK: Ready
+[RESULT] avg RTT over 20 probes (size=8192B): 3.828 ms
+[RESULT] avg Throughput over 20 probes (size=8192B): 71.442 Mbps
+[CTP RESP] 200 OK: Closing Connection
 ```
 
-client on my own computer:
+Output of Server
 
 ```bash
-(base) awsomeone@jxx CASCS_655_PA1 % javac -encoding UTF-8 -d out $(find src -name "*.java")
-(base) awsomeone@jxx CASCS_655_PA1 % java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
-```
-
-Now I will test sending different messages from all these clients.
-
-client on csa3:
-
-```bash
-[xiaoxij@csa3 pa1part1]$ java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
-this is a message from csa3 server😝
-this is a message from csa3 server😝
-            
-            
-test space above
-test space above
-
-
-test empty line above
-test empty line above
-```
-
-client from my own computer:
-
-```bash
-(base) awsomeone@jxx CASCS_655_PA1 % java -cp out Client csa1.bu.edu 58034
-Server connected, send messages or type 'exit' to quit
-this is a message from my own computer🤓
-this is a message from my own computer🤓
-     
-     
-test space
-test space
-
-
-test empty line
-test empty line
-```
-
-output of server:
-
-```bash
-[xiaoxij@csa1 pa1part1]$ java -cp out Server 58034
+[xiaoxij@csa1 pa1part2]$ java -cp out Server 58034
 Server is listening on port 58034 ...
-message from /128.197.11.36:34426: hello, this is a message from csa2 server
-message from /128.197.11.36:34426: hello👋
-message from /128.197.11.36:34426: test space       there are five space
-message from /128.197.11.36:34426:      
-message from /128.197.11.36:34426: 
-message from /128.197.11.36:34426: 
-message from /128.197.11.36:34426: test empty line and space above
-message from /128.197.11.45:49346: this is a message from csa3 server😝
-message from /128.197.11.45:49346:             
-message from /128.197.11.45:49346: test space above
-message from /128.197.11.45:49346: 
-message from /128.197.11.45:49346: test empty line above
-message from /69.31.37.19:64559: this is a message from my own computer🤓
-message from /69.31.37.19:64559:      
-message from /69.31.37.19:64559: test space
-message from /69.31.37.19:64559: 
-message from /69.31.37.19:64559: test empty line
+CSP from /128.197.11.36:57138 => type=rtt N=20 size=1000 delay=0ms
+CSP from /128.197.11.36:45682 => type=tput N=20 size=8192 delay=0ms
 ```
 
-We can see the server successfully receive all messages from different client.
-
-**Robustness:**
-
-When server registers a wrong port:
+Concurrency: run another client on csa3, and use `java -cp out Client csa1.bu.edu 58034 rtt 20 1000 500` on csa2. Then csa2 need a lot of time to wait for the server delay. If csa3 could finish a task before csa2, it will prove that the server could handle multiple connections in the same time.
+the server received three CSP messages,
 
 ```bash
-[xiaoxij@csa1 pa1part1]$ java -cp out Server 88888
-Port must be in 58000–58999 on csa machines.
+CSP from /128.197.11.36:41924 => type=rtt N=20 size=1000 delay=500ms
+CSP from /128.197.11.45:40036 => type=tput N=20 size=1024 delay=0ms
+CSP from /69.31.37.19:59049 => type=tput N=20 size=1024 delay=500ms
 ```
 
-Running client while server not run:
+The first is from csa2, the second is from csa3, and the last is from my own computer. You can see csa3 has finished its job while csa2 and my computer are still processing.Finally, they all finished their job
+### 4. Evaluation Enviroment
 
-```bash
-[xiaoxij@csa2 pa1part1]$ java -cp out Client csa1.bu.edu 58034
-Exception in thread "main" java.net.ConnectException: Connection refused (Connection refused)
-	at java.net.PlainSocketImpl.socketConnect(Native Method)
-	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:350)
-	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:206)
-	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:188)
-	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:392)
-	at java.net.Socket.connect(Socket.java:607)
-	at java.net.Socket.connect(Socket.java:556)
-	at java.net.Socket.<init>(Socket.java:452)
-	at java.net.Socket.<init>(Socket.java:229)
-	at Client.main(Client.java:22)
-```
-
-Peer closes: `readLine()==null` → handler exits cleanly.
-
-### 4. Known Limitations
-
-- Messages must end with newline (`\n`) due to line-based framing.
-
-- One-thread-per-connection is not for very high concurrency.
+The server program is on the csa1 mechine and the client program is on the csa2 machine. My own computer is MacBook Air M2 with operation system macOS Tahoe 26.0.1. The network I use is the WIFI of my apartment. I manually collected the output of all the test results and wrote a python code to extract the result data. The probe number I used for each set of experiments is 20.
